@@ -1,6 +1,8 @@
 from django.db import models
 from django.urls import reverse
 from datetime import date
+from django.contrib.auth.models import User
+
 
 # Create your models here.
 
@@ -17,10 +19,20 @@ RATINGS = (
   ('B', 'Bad')
 )
 
+class Review(models.Model):
+  date = models.DateField()
+  rating = models.CharField(
+    max_length=1,
+      choices=RATINGS,
+      default=RATINGS[0][0]
+  )
+
 class Movie(models.Model):
   name = models.CharField(max_length=100)
   description = models.TextField(max_length=250)
-  # reviews = models.ManyToManyField(Review)
+  reviews = models.ManyToManyField(Review)
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
+
 
 
   def __str__(self):
@@ -29,16 +41,17 @@ class Movie(models.Model):
   def get_absolute_url(self):
     return reverse('detail', kwargs={'movie_id': self.id})
 
-  def review_for_today(self):
-    return self.review_set.filter(date=date.today()).count() >= len(RATINGS)
+  # def review_for_today(self):
+  #   return self.review_set.filter(date=date.today()).count() >= len(RATINGS)
 
-class Review(models.Model):
-  date = models.DateField()
-  rating = models.CharField(
-    max_length=1,
-      choices=RATINGS,
-      default=RATINGS[0][0]
-  )
+
+
+class Photo(models.Model):
+    url = models.CharField(max_length=200)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Photo for movie_id: {self.movie_id} @{self.url}"
 
 class Watching(models.Model):
   date = models.DateField('Watch Date')
